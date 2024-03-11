@@ -14,4 +14,4 @@ To configure your environment, open the notebook `0-AI-settings.ipynb` and follo
 If you want to test the EmailPlugin in the Planner section, you need to create a `config/email_endpoint.txt` file containing the endpoint URL of a Logic App workflow. 
 The workflow should look like this:
 
-![](EmailWorkflow.png)
+<img src="https://github.com/cplemm/SemanticKernelDemo/blob/f9576e196b33a53b8c686885ddca1cea0e9ebee4/EmailWorkflow.png" width="50%" >
