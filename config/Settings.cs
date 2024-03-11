@@ -142,7 +142,7 @@ public static class Settings
         // If needed prompt user for Bing key
         if (string.IsNullOrWhiteSpace(email))
         {
-            email = (await InteractiveKernel.GetPasswordAsync("Please enter an email address")).GetClearTextPassword();
+            email = (await InteractiveKernel.GetInputAsync("Please enter an email address"));
         }
 
         WriteSettings(configFile, useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing);
