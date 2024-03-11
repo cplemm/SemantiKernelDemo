@@ -18,13 +18,14 @@ public static class Settings
     private const string EndpointKey = "endpoint";
     private const string SecretKey = "apikey";
     private const string OrgKey = "org";
+    private const string EmailKey = "email";
     private const string BingKey = "bing";
     private const bool StoreConfigOnFile = true;
 
     // Prompt user for Azure Endpoint URL
     public static async Task<string> AskAzureEndpoint(bool _useAzureOpenAI = true, string configFile = DefaultConfigFile)
     {
-        var (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, bing) = ReadSettings(_useAzureOpenAI, configFile);
+        var (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing) = ReadSettings(_useAzureOpenAI, configFile);
 
         // If needed prompt user for Azure endpoint
         if (useAzureOpenAI && string.IsNullOrWhiteSpace(azureEndpoint))
@@ -32,7 +33,7 @@ public static class Settings
             azureEndpoint = await InteractiveKernel.GetInputAsync("Please enter your Azure OpenAI endpoint");
         }
 
-        WriteSettings(configFile, useAzureOpenAI, model, azureEndpoint, apiKey, orgId, bing);
+        WriteSettings(configFile, useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing);
 
         // Print report
         if (useAzureOpenAI)
@@ -48,7 +49,7 @@ public static class Settings
     // Prompt user for OpenAI model name / Azure OpenAI deployment name
     public static async Task<string> AskModel(bool _useAzureOpenAI = true, string configFile = DefaultConfigFile)
     {
-        var (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, bing) = ReadSettings(_useAzureOpenAI, configFile);
+        var (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing) = ReadSettings(_useAzureOpenAI, configFile);
 
         // If needed prompt user for model name / deployment name
         if (string.IsNullOrWhiteSpace(model))
@@ -64,7 +65,7 @@ public static class Settings
             }
         }
 
-        WriteSettings(configFile, useAzureOpenAI, model, azureEndpoint, apiKey, orgId, bing);
+        WriteSettings(configFile, useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing);
 
         // Print report
         if (useAzureOpenAI)
@@ -86,7 +87,7 @@ public static class Settings
     // Prompt user for API Key
     public static async Task<string> AskApiKey(bool _useAzureOpenAI = true, string configFile = DefaultConfigFile)
     {
-        var (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, bing) = ReadSettings(_useAzureOpenAI, configFile);
+        var (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing) = ReadSettings(_useAzureOpenAI, configFile);
 
         // If needed prompt user for API key
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -102,7 +103,7 @@ public static class Settings
             }
         }
 
-        WriteSettings(configFile, useAzureOpenAI, model, azureEndpoint, apiKey, orgId, bing);
+        WriteSettings(configFile, useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing);
 
         // Print report
         Console.WriteLine("Settings: " + (string.IsNullOrWhiteSpace(apiKey)
@@ -115,7 +116,7 @@ public static class Settings
     // Prompt user for Bing Key
     public static async Task<string> AskBingKey(bool _useAzureOpenAI = true, string configFile = DefaultConfigFile)
     {
-        var (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, bing) = ReadSettings(_useAzureOpenAI, configFile);
+        var (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing) = ReadSettings(_useAzureOpenAI, configFile);
 
         // If needed prompt user for Bing key
         if (string.IsNullOrWhiteSpace(bing))
@@ -123,7 +124,7 @@ public static class Settings
             bing = (await InteractiveKernel.GetPasswordAsync("Please enter your Bing API key")).GetClearTextPassword();
         }
 
-        WriteSettings(configFile, useAzureOpenAI, model, azureEndpoint, apiKey, orgId, bing);
+        WriteSettings(configFile, useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing);
 
         // Print report
         Console.WriteLine("Settings: " + (string.IsNullOrWhiteSpace(bing)
@@ -133,10 +134,32 @@ public static class Settings
         return bing;
     }
 
+    // Prompt user for email address
+    public static async Task<string> AskEmail(bool _useAzureOpenAI = true, string configFile = DefaultConfigFile)
+    {
+        var (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing) = ReadSettings(_useAzureOpenAI, configFile);
+
+        // If needed prompt user for Bing key
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            email = (await InteractiveKernel.GetPasswordAsync("Please enter an email address")).GetClearTextPassword();
+        }
+
+        WriteSettings(configFile, useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing);
+
+        // Print report
+        Console.WriteLine("Settings: " + (string.IsNullOrWhiteSpace(email)
+            ? "ERROR: Email address is empty"
+            : $"OK: Email address configured [{configFile}]"));
+
+        return email;
+    }
+
+
     // Prompt user for OpenAI Organization Id
     public static async Task<string> AskOrg(bool _useAzureOpenAI = true, string configFile = DefaultConfigFile)
     {
-        var (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, bing) = ReadSettings(_useAzureOpenAI, configFile);
+        var (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing) = ReadSettings(_useAzureOpenAI, configFile);
 
         // If needed prompt user for OpenAI Org Id
         if (!useAzureOpenAI && string.IsNullOrWhiteSpace(orgId))
@@ -144,13 +167,13 @@ public static class Settings
             orgId = await InteractiveKernel.GetInputAsync("Please enter your OpenAI Organization Id (enter 'NONE' to skip)");
         }
 
-        WriteSettings(configFile, useAzureOpenAI, model, azureEndpoint, apiKey, orgId, bing);
+        WriteSettings(configFile, useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing);
 
         return orgId;
     }
 
     // Load settings from file
-    public static (bool useAzureOpenAI, string model, string azureEndpoint, string apiKey, string orgId, string bing)
+    public static (bool useAzureOpenAI, string model, string azureEndpoint, string apiKey, string orgId, string email, string bing)
         LoadFromFile(string configFile = DefaultConfigFile)
     {
         if (!File.Exists(configFile))
@@ -169,14 +192,15 @@ public static class Settings
             string apiKey = config[SecretKey];
             string orgId = config[OrgKey];
             if (orgId == "none") { orgId = ""; }
+            string email = config[EmailKey];
             string bing = config[BingKey];
 
-            return (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, bing);
+            return (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing);
         }
         catch (Exception e)
         {
             Console.WriteLine("Something went wrong: " + e.Message);
-            return (true, "", "", "", "", "");
+            return (true, "", "", "", "", "", "");
         }
     }
 
@@ -197,7 +221,7 @@ public static class Settings
     }
 
     // Read and return settings from file
-    private static (bool useAzureOpenAI, string model, string azureEndpoint, string apiKey, string orgId, string bing)
+    private static (bool useAzureOpenAI, string model, string azureEndpoint, string apiKey, string orgId, string email, string bing)
         ReadSettings(bool _useAzureOpenAI, string configFile)
     {
         // Save the preference set in the notebook
@@ -206,13 +230,14 @@ public static class Settings
         string azureEndpoint = "";
         string apiKey = "";
         string orgId = "";
+        string email = "";
         string bing = "";
 
         try
         {
             if (File.Exists(configFile))
             {
-                (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, bing) = LoadFromFile(configFile);
+                (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing) = LoadFromFile(configFile);
             }
         }
         catch (Exception e)
@@ -229,15 +254,16 @@ public static class Settings
             azureEndpoint = "";
             apiKey = "";
             orgId = "";
+            email = "";
             bing = "";
         }
 
-        return (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, bing);
+        return (useAzureOpenAI, model, azureEndpoint, apiKey, orgId, email, bing);
     }
 
     // Write settings to file
     private static void WriteSettings(
-        string configFile, bool useAzureOpenAI, string model, string azureEndpoint, string apiKey, string orgId, string bing)
+        string configFile, bool useAzureOpenAI, string model, string azureEndpoint, string apiKey, string orgId, string email, string bing)
     {
         try
         {
@@ -250,6 +276,7 @@ public static class Settings
                     { EndpointKey, azureEndpoint },
                     { SecretKey, apiKey },
                     { OrgKey, orgId },
+                    { EmailKey, email },
                     { BingKey, bing },
                 };
 
